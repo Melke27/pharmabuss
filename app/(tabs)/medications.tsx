@@ -1,51 +1,69 @@
-import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useMedicationStore } from '../../store';
 import { useTranslation } from '../../hooks';
 import { Colors, Spacing, Typography, BorderRadius, Shadows } from '../../constants/design';
 import { Medication } from '../../types';
+import AddMedicationModal from '../../components/AddMedicationModal';
+import { DDIService } from '../../services/ddiService';
+import InteractionCard from '../../components/InteractionCard';
 
 export default function MedicationsScreen() {
   const { t } = useTranslation();
   const { medications, deleteMedication } = useMedicationStore();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [editMed, setEditMed] = useState<Medication | undefined>(undefined);
+  const [showInteractions, setShowInteractions] = useState(false);
 
   const activeMedications = medications.filter((m) => m.status === 'active');
+  const interactions = showInteractions && activeMedications.length >= 2
+    ? DDIService.checkDDI(activeMedications).interactions
+    : [];
+
+  const handleDelete = (id: string, name: string) => {
+    Alert.alert('Delete Medication', `Remove ${name}?`, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: () => deleteMedication(id) },
+    ]);
+  };
+
+  const handleEdit = (med: Medication) => {
+    setEditMed(med);
+    setModalVisible(true);
+  };
 
   const renderMedication = ({ item }: { item: Medication }) => (
-    <View style={styles.medicationCard}>
-      <View style={styles.cardTopRow}>
-        <View style={styles.medicationInfo}>
-          <Text style={styles.medicationName}>{item.name}</Text>
-          {!!item.genericName && <Text style={styles.medicationGeneric}>{item.genericName}</Text>}
+    <TouchableOpacity activeOpacity={0.7} onPress={() => handleEdit(item)}>
+      <View style={styles.medicationCard}>
+        <View style={styles.cardTopRow}>
+          <View style={styles.medicationInfo}>
+            <Text style={styles.medicationName}>{item.name}</Text>
+            {!!item.genericName && <Text style={styles.medicationGeneric}>{item.genericName}</Text>}
+          </View>
+          <TouchableOpacity onPress={() => handleDelete(item.id, item.name)} style={styles.deleteButton}>
+            <Ionicons name="trash-outline" size={18} color={Colors.error} />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          onPress={() => deleteMedication(item.id)}
-          style={styles.deleteButton}
-          accessibilityLabel={`Delete ${item.name}`}
-        >
-          <Ionicons name="trash-outline" size={18} color={Colors.error} />
-        </TouchableOpacity>
+        <View style={styles.metaRow}>
+          <View style={styles.metaChip}>
+            <Ionicons name="flask" size={13} color={Colors.primary} />
+            <Text style={styles.metaChipText}>{item.dosage} {item.unit}</Text>
+          </View>
+          <View style={[styles.metaChip, styles.metaChipBlue]}>
+            <Ionicons name="time-outline" size={13} color={Colors.primary} />
+            <Text style={styles.metaChipText}>{item.frequency.replace(/_/g, ' ')}</Text>
+          </View>
+        </View>
+        {!!item.instructions && (
+          <View style={styles.instructionsRow}>
+            <Ionicons name="information-circle-outline" size={15} color={Colors.textSecondary} />
+            <Text style={styles.instructionsText}>{item.instructions}</Text>
+          </View>
+        )}
       </View>
-
-      <View style={styles.metaRow}>
-        <View style={styles.metaChip}>
-          <Ionicons name="flask" size={13} color={Colors.primary} />
-          <Text style={styles.metaChipText}>{item.dosage} {item.unit}</Text>
-        </View>
-        <View style={[styles.metaChip, styles.metaChipBlue]}>
-          <Ionicons name="time-outline" size={13} color={Colors.primary} />
-          <Text style={styles.metaChipText}>{item.frequency}</Text>
-        </View>
-      </View>
-
-      {!!item.instructions && (
-        <View style={styles.instructionsRow}>
-          <Ionicons name="information-circle-outline" size={15} color={Colors.textSecondary} />
-          <Text style={styles.instructionsText}>{item.instructions}</Text>
-        </View>
-      )}
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -62,11 +80,34 @@ export default function MedicationsScreen() {
       </View>
 
       <View style={styles.actionRow}>
-        <TouchableOpacity style={styles.actionButton} activeOpacity={0.9}>
+        <TouchableOpacity style={styles.actionButton} activeOpacity={0.9} onPress={() => { setEditMed(undefined); setModalVisible(true); }}>
           <Ionicons name="add-circle" size={18} color={Colors.textOnPrimary} />
           <Text style={styles.actionButtonText}>{t('medications.addMedication')}</Text>
         </TouchableOpacity>
       </View>
+
+      {activeMedications.length >= 2 && (
+        <TouchableOpacity style={styles.interactionToggle} onPress={() => setShowInteractions(!showInteractions)}>
+          <Ionicons name="pulse-outline" size={16} color={interactions.length > 0 ? Colors.error : Colors.success} />
+          <Text style={[styles.interactionToggleText, { color: interactions.length > 0 ? Colors.error : Colors.success }]}>
+            {showInteractions ? 'Hide' : 'Check'} Drug Interactions ({activeMedications.length} meds)
+          </Text>
+        </TouchableOpacity>
+      )}
+
+      {showInteractions && interactions.length > 0 && (
+        <View style={styles.interactionsSection}>
+          <Text style={styles.interactionsTitle}>Drug Interactions Found</Text>
+          {interactions.map((interaction, i) => (
+            <InteractionCard key={i} interaction={{
+              medications: `${medications.find(m => m.name.toLowerCase().includes(interaction.medication1Id.toLowerCase()))?.name || interaction.medication1Id} & ${medications.find(m => m.name.toLowerCase().includes(interaction.medication2Id.toLowerCase()))?.name || interaction.medication2Id}`,
+              severity: interaction.severity,
+              description: interaction.description,
+              recommendation: interaction.recommendation,
+            }} />
+          ))}
+        </View>
+      )}
 
       {activeMedications.length === 0 ? (
         <View style={styles.emptyContainer}>
@@ -83,8 +124,11 @@ export default function MedicationsScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
+          ListHeaderComponent={null}
         />
       )}
+
+      <AddMedicationModal visible={modalVisible} onClose={() => { setModalVisible(false); setEditMed(undefined); }} editMedication={editMed} />
     </SafeAreaView>
   );
 }
@@ -254,4 +298,11 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center',
   },
+  interactionToggle: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingVertical: Spacing.sm, marginBottom: Spacing.xs,
+  },
+  interactionToggleText: { ...Typography.fontSize.sm, ...Typography.fontWeight.medium },
+  interactionsSection: { marginBottom: Spacing.md },
+  interactionsTitle: { ...Typography.fontSize.sm, ...Typography.fontWeight.semibold, color: Colors.textSecondary, marginBottom: Spacing.sm },
 });

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "PPT CARE FOR NCD",
-    "slug": "ppt-care-for-ncd",
+    "name": "PolyCare",
+    "slug": "polycare",
     "scheme": "polycare",
     "version": "1.1.0",
     "orientation": "portrait",

@@ -3,6 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BorderRadius, Colors, Shadows, Spacing, Typography } from '../../constants/design';
+import { useMedicationStore, useReminderStore } from '../../store';
 
 type TaskStatus = 'pending' | 'completed';
 type Task = {
@@ -13,14 +14,55 @@ type Task = {
   status: TaskStatus;
 };
 
-const initialTasks: Task[] = [
-  { id: 't1', title: 'Review blood pressure log', category: 'Health', priority: 'high', status: 'pending' },
-  { id: 't2', title: 'Refill metformin', category: 'Medication', priority: 'medium', status: 'pending' },
-  { id: 't3', title: 'Walk 30 minutes', category: 'Lifestyle', priority: 'low', status: 'completed' },
-];
+function generateTasks(
+  medications: ReturnType<typeof useMedicationStore.getState>['medications'],
+  reminders: ReturnType<typeof useReminderStore.getState>['reminders']
+): Task[] {
+  const tasks: Task[] = [];
+
+  for (const med of medications) {
+    if (med.currentStock !== undefined && med.currentStock <= 3) {
+      tasks.push({
+        id: `stock-${med.id}`,
+        title: `Refill ${med.name} (${med.currentStock} left)`,
+        category: 'Medication',
+        priority: med.currentStock <= 1 ? 'high' : 'medium',
+        status: 'pending',
+      });
+    }
+    if (med.refillDate && new Date(med.refillDate) <= new Date(Date.now() + 7 * 86400000)) {
+      tasks.push({
+        id: `refill-${med.id}`,
+        title: `Refill due for ${med.name}${med.refillDate ? ` (${new Date(med.refillDate).toLocaleDateString()})` : ''}`,
+        category: 'Medication',
+        priority: 'medium',
+        status: 'pending',
+      });
+    }
+  }
+
+  for (const reminder of reminders) {
+    if (reminder.enabled) {
+      const today = new Date().getDay();
+      if (reminder.days.length === 0 || reminder.days.includes(today)) {
+        tasks.push({
+          id: `reminder-${reminder.id}`,
+          title: `Take ${reminder.title || 'medication'} at ${reminder.time}`,
+          category: 'Health',
+          priority: 'high',
+          status: 'pending',
+        });
+      }
+    }
+  }
+
+  return tasks;
+}
 
 export default function TasksScreen() {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const { medications } = useMedicationStore();
+  const { reminders } = useReminderStore();
+  const [tasks, setTasks] = useState<Task[]>(() => generateTasks(medications, reminders));
   const [filter, setFilter] = useState<TaskStatus>('pending');
   const [search, setSearch] = useState('');
 
@@ -40,11 +82,22 @@ export default function TasksScreen() {
     setTasks((prev) => prev.filter((task) => task.id !== id));
   };
 
+  const refreshTasks = () => {
+    setTasks(generateTasks(medications, reminders));
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headerCard}>
-        <Text style={styles.title}>Your Tasks</Text>
-        <Text style={styles.subtitle}>Simple daily checklist to stay consistent.</Text>
+        <View style={styles.headerRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.title}>Your Tasks</Text>
+            <Text style={styles.subtitle}>Simple daily checklist to stay consistent.</Text>
+          </View>
+          <TouchableOpacity style={styles.refreshButton} onPress={refreshTasks}>
+            <Ionicons name="refresh" size={18} color={Colors.primary} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.controls}>
@@ -55,7 +108,6 @@ export default function TasksScreen() {
           placeholderTextColor={Colors.textLight}
           style={styles.searchInput}
         />
-
         <View style={styles.filterRow}>
           <TouchableOpacity
             style={[styles.filterButton, filter === 'pending' && styles.filterButtonActive]}
@@ -90,7 +142,6 @@ export default function TasksScreen() {
                   </Text>
                 </View>
               </View>
-
               <View style={styles.actionsRow}>
                 {task.status === 'pending' && (
                   <TouchableOpacity style={styles.iconButton} onPress={() => completeTask(task.id)}>
@@ -110,125 +161,36 @@ export default function TasksScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-    paddingHorizontal: Spacing.md,
-  },
+  container: { flex: 1, backgroundColor: Colors.background, paddingHorizontal: Spacing.md },
   headerCard: {
-    marginTop: Spacing.sm,
-    marginBottom: Spacing.md,
-    borderRadius: BorderRadius.xl,
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    padding: Spacing.lg,
-    ...Shadows.sm,
+    marginTop: Spacing.sm, marginBottom: Spacing.md, borderRadius: BorderRadius.xl,
+    backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border,
+    padding: Spacing.lg, ...Shadows.sm,
   },
-  title: {
-    ...Typography.fontSize.xl,
-    ...Typography.fontWeight.bold,
-    color: Colors.text,
-    marginBottom: 4,
-  },
-  subtitle: {
-    ...Typography.fontSize.sm,
-    color: Colors.textSecondary,
-  },
-  controls: {
-    marginBottom: Spacing.md,
-  },
+  headerRow: { flexDirection: 'row', alignItems: 'center' },
+  title: { ...Typography.fontSize.xl, ...Typography.fontWeight.bold, color: Colors.text, marginBottom: 4 },
+  subtitle: { ...Typography.fontSize.sm, color: Colors.textSecondary },
+  refreshButton: { width: 36, height: 36, borderRadius: 18, backgroundColor: Colors.infoLight, alignItems: 'center', justifyContent: 'center' },
+  controls: { marginBottom: Spacing.md },
   searchInput: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: BorderRadius.lg,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    ...Typography.fontSize.md,
-    color: Colors.text,
-    marginBottom: Spacing.sm,
+    backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border,
+    borderRadius: BorderRadius.lg, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm,
+    ...Typography.fontSize.md, color: Colors.text, marginBottom: Spacing.sm,
   },
-  filterRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  filterButton: {
-    flex: 1,
-    backgroundColor: Colors.surfaceVariant,
-    borderRadius: BorderRadius.lg,
-    paddingVertical: Spacing.sm,
-    alignItems: 'center',
-  },
-  filterButtonActive: {
-    backgroundColor: Colors.primary,
-  },
-  filterText: {
-    ...Typography.fontSize.sm,
-    ...Typography.fontWeight.semibold,
-    color: Colors.textSecondary,
-  },
-  filterTextActive: {
-    color: Colors.textOnPrimary,
-  },
-  list: {
-    paddingBottom: 110,
-    gap: 8,
-  },
-  emptyCard: {
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    padding: Spacing.lg,
-    alignItems: 'center',
-    gap: 8,
-  },
-  emptyTitle: {
-    ...Typography.fontSize.md,
-    color: Colors.textSecondary,
-  },
-  taskCard: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.md,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  taskMain: {
-    flex: 1,
-    marginRight: Spacing.sm,
-  },
-  taskTitle: {
-    ...Typography.fontSize.md,
-    ...Typography.fontWeight.semibold,
-    color: Colors.text,
-    marginBottom: 4,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  taskMeta: {
-    ...Typography.fontSize.xs,
-    color: Colors.textSecondary,
-  },
-  priorityHigh: {
-    color: Colors.error,
-  },
-  actionsRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  iconButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: Colors.surfaceVariant,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  filterRow: { flexDirection: 'row', gap: 8 },
+  filterButton: { flex: 1, backgroundColor: Colors.surfaceVariant, borderRadius: BorderRadius.lg, paddingVertical: Spacing.sm, alignItems: 'center' },
+  filterButtonActive: { backgroundColor: Colors.primary },
+  filterText: { ...Typography.fontSize.sm, ...Typography.fontWeight.semibold, color: Colors.textSecondary },
+  filterTextActive: { color: Colors.textOnPrimary },
+  list: { paddingBottom: 110, gap: 8 },
+  emptyCard: { backgroundColor: Colors.surface, borderRadius: BorderRadius.lg, borderWidth: 1, borderColor: Colors.border, padding: Spacing.lg, alignItems: 'center', gap: 8 },
+  emptyTitle: { ...Typography.fontSize.md, color: Colors.textSecondary },
+  taskCard: { backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: BorderRadius.lg, padding: Spacing.md, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  taskMain: { flex: 1, marginRight: Spacing.sm },
+  taskTitle: { ...Typography.fontSize.md, ...Typography.fontWeight.semibold, color: Colors.text, marginBottom: 4 },
+  metaRow: { flexDirection: 'row', gap: 8 },
+  taskMeta: { ...Typography.fontSize.xs, color: Colors.textSecondary },
+  priorityHigh: { color: Colors.error },
+  actionsRow: { flexDirection: 'row', gap: 8 },
+  iconButton: { width: 32, height: 32, borderRadius: 16, backgroundColor: Colors.surfaceVariant, alignItems: 'center', justifyContent: 'center' },
 });

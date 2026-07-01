@@ -1,0 +1,173 @@
+import { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, TextInput, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useMedicationStore } from '../store';
+import { Colors, Spacing, Typography, BorderRadius, Shadows } from '../constants/design';
+import { Medication, DoseUnit, Frequency } from '../types';
+
+interface Props {
+  visible: boolean;
+  onClose: () => void;
+  editMedication?: Medication;
+}
+
+const UNITS: DoseUnit[] = ['mg', 'g', 'mcg', 'ml', 'units', 'tablet', 'capsule'];
+const FREQUENCIES: Frequency[] = [
+  'once_daily', 'twice_daily', 'three_times_daily', 'four_times_daily',
+  'every_8_hours', 'every_12_hours', 'every_24_hours', 'as_needed', 'weekly', 'monthly',
+];
+
+export default function AddMedicationModal({ visible, onClose, editMedication }: Props) {
+  const addMedication = useMedicationStore((s) => s.addMedication);
+  const updateMedication = useMedicationStore((s) => s.updateMedication);
+
+  const [name, setName] = useState(editMedication?.name || '');
+  const [genericName, setGenericName] = useState(editMedication?.genericName || '');
+  const [dosage, setDosage] = useState(editMedication?.dosage?.toString() || '');
+  const [unit, setUnit] = useState<DoseUnit>(editMedication?.unit || 'mg');
+  const [frequency, setFrequency] = useState<Frequency>(editMedication?.frequency || 'once_daily');
+  const [instructions, setInstructions] = useState(editMedication?.instructions || '');
+  const [startDate, setStartDate] = useState(editMedication?.startDate || new Date().toISOString().split('T')[0]);
+  const [endDate, setEndDate] = useState(editMedication?.endDate || '');
+  const [notes, setNotes] = useState(editMedication?.notes || '');
+  const [currentStock, setCurrentStock] = useState(editMedication?.currentStock?.toString() || '');
+
+  const reset = () => {
+    setName(''); setGenericName(''); setDosage(''); setUnit('mg');
+    setFrequency('once_daily'); setInstructions(''); setStartDate(new Date().toISOString().split('T')[0]);
+    setEndDate(''); setNotes(''); setCurrentStock('');
+  };
+
+  const handleSave = () => {
+    if (!name.trim()) { Alert.alert('Required', 'Medication name is required'); return; }
+    if (!dosage || isNaN(Number(dosage))) { Alert.alert('Required', 'Valid dosage is required'); return; }
+
+    const med: Medication = {
+      id: editMedication?.id || Date.now().toString(),
+      name: name.trim(),
+      genericName: genericName.trim() || undefined,
+      dosage: Number(dosage),
+      unit,
+      frequency,
+      instructions,
+      startDate,
+      endDate: endDate || undefined,
+      status: 'active',
+      notes: notes.trim() || undefined,
+      currentStock: currentStock ? Number(currentStock) : undefined,
+    };
+
+    if (editMedication) {
+      updateMedication(med.id, med);
+    } else {
+      addMedication(med);
+    }
+    reset();
+    onClose();
+  };
+
+  return (
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={onClose}>
+            <Ionicons name="close" size={24} color={Colors.text} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{editMedication ? 'Edit' : 'Add'} Medication</Text>
+          <TouchableOpacity onPress={handleSave}>
+            <Text style={styles.saveText}>Save</Text>
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
+          <Text style={styles.label}>Medication Name *</Text>
+          <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="e.g. Metformin" placeholderTextColor={Colors.textLight} />
+
+          <Text style={styles.label}>Generic Name</Text>
+          <TextInput style={styles.input} value={genericName} onChangeText={setGenericName} placeholder="e.g. Metformin HCl" placeholderTextColor={Colors.textLight} />
+
+          <View style={styles.row}>
+            <View style={styles.halfField}>
+              <Text style={styles.label}>Dosage *</Text>
+              <TextInput style={styles.input} value={dosage} onChangeText={setDosage} placeholder="500" keyboardType="decimal-pad" placeholderTextColor={Colors.textLight} />
+            </View>
+            <View style={styles.halfField}>
+              <Text style={styles.label}>Unit</Text>
+              <View style={styles.pickerRow}>
+                {UNITS.map((u) => (
+                  <TouchableOpacity key={u} style={[styles.pill, unit === u && styles.pillActive]} onPress={() => setUnit(u)}>
+                    <Text style={[styles.pillText, unit === u && styles.pillTextActive]}>{u}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </View>
+
+          <Text style={styles.label}>Frequency</Text>
+          <View style={styles.pickerRow}>
+            {FREQUENCIES.map((f) => (
+              <TouchableOpacity key={f} style={[styles.freqPill, frequency === f && styles.pillActive]} onPress={() => setFrequency(f)}>
+                <Text style={[styles.pillText, frequency === f && styles.pillTextActive]}>
+                  {f.replace(/_/g, ' ')}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <Text style={styles.label}>Instructions</Text>
+          <TextInput style={[styles.input, styles.textArea]} value={instructions} onChangeText={setInstructions} placeholder="e.g. Take with food" multiline numberOfLines={3} placeholderTextColor={Colors.textLight} />
+
+          <View style={styles.row}>
+            <View style={styles.halfField}>
+              <Text style={styles.label}>Start Date</Text>
+              <TextInput style={styles.input} value={startDate} onChangeText={setStartDate} placeholder="YYYY-MM-DD" placeholderTextColor={Colors.textLight} />
+            </View>
+            <View style={styles.halfField}>
+              <Text style={styles.label}>End Date (optional)</Text>
+              <TextInput style={styles.input} value={endDate} onChangeText={setEndDate} placeholder="YYYY-MM-DD" placeholderTextColor={Colors.textLight} />
+            </View>
+          </View>
+
+          <Text style={styles.label}>Current Stock</Text>
+          <TextInput style={styles.input} value={currentStock} onChangeText={setCurrentStock} placeholder="e.g. 30 tablets" keyboardType="decimal-pad" placeholderTextColor={Colors.textLight} />
+
+          <Text style={styles.label}>Notes</Text>
+          <TextInput style={[styles.input, styles.textArea]} value={notes} onChangeText={setNotes} placeholder="Additional notes..." multiline numberOfLines={2} placeholderTextColor={Colors.textLight} />
+        </ScrollView>
+      </View>
+    </Modal>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: Colors.background },
+  header: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: Spacing.md, paddingVertical: Spacing.md,
+    borderBottomWidth: 1, borderBottomColor: Colors.border,
+  },
+  headerTitle: { ...Typography.fontSize.lg, ...Typography.fontWeight.bold, color: Colors.text },
+  saveText: { ...Typography.fontSize.md, ...Typography.fontWeight.semibold, color: Colors.primary },
+  form: { padding: Spacing.md, paddingBottom: 120 },
+  label: { ...Typography.fontSize.sm, ...Typography.fontWeight.medium, color: Colors.text, marginBottom: Spacing.xs, marginTop: Spacing.md },
+  input: {
+    backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border,
+    borderRadius: BorderRadius.md, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm,
+    ...Typography.fontSize.md, color: Colors.text,
+  },
+  textArea: { minHeight: 72, textAlignVertical: 'top' },
+  row: { flexDirection: 'row', gap: Spacing.sm },
+  halfField: { flex: 1 },
+  pickerRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  pill: {
+    paddingHorizontal: Spacing.sm, paddingVertical: 6, borderRadius: BorderRadius.full,
+    borderWidth: 1, borderColor: Colors.border, backgroundColor: Colors.surface,
+  },
+  pillActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
+  pillText: { ...Typography.fontSize.xs, color: Colors.textSecondary },
+  pillTextActive: { color: Colors.textOnPrimary, ...Typography.fontWeight.medium },
+  freqPill: {
+    paddingHorizontal: Spacing.sm, paddingVertical: 6, borderRadius: BorderRadius.full,
+    borderWidth: 1, borderColor: Colors.border, backgroundColor: Colors.surface,
+  },
+});
