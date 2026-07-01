@@ -26,6 +26,7 @@ app.use('/api/medications', require('./routes/medications'));
 app.use('/api/reminders', require('./routes/reminders'));
 app.use('/api/consultations', require('./routes/consultations'));
 app.use('/api/habits', require('./routes/habits'));
+app.use('/api/admin', require('./routes/admin'));
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

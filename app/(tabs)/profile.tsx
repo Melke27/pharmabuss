@@ -93,6 +93,13 @@ export default function ProfileScreen() {
               <Text style={styles.accountValue}>{new Date(user.createdAt).toLocaleDateString()}</Text>
             </View>
 
+            {user.role === 'admin' && (
+              <TouchableOpacity style={styles.adminButton} onPress={() => router.push('/admin')}>
+                <Ionicons name="shield-checkmark-outline" size={20} color={Colors.primary} />
+                <Text style={styles.adminButtonText}>Admin Panel</Text>
+                <Ionicons name="chevron-forward" size={16} color={Colors.primary} />
+              </TouchableOpacity>
+            )}
             <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
               <Ionicons name="log-out-outline" size={20} color={Colors.error} />
               <Text style={styles.logoutText}>{t('settings.logout')}</Text>
@@ -321,6 +328,12 @@ const styles = StyleSheet.create({
     ...Typography.fontSize.md,
     color: Colors.text,
   },
+  adminButton: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: Colors.infoLight, borderRadius: BorderRadius.lg,
+    paddingVertical: Spacing.md, paddingHorizontal: Spacing.md, marginTop: Spacing.md,
+  },
+  adminButtonText: { flex: 1, ...Typography.fontSize.md, ...Typography.fontWeight.semibold, color: Colors.primary },
   logoutButton: {
     marginTop: Spacing.md,
     flexDirection: 'row',

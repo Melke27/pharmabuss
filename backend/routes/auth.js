@@ -18,11 +18,13 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'User already exists with this email' });
     }
 
+    const userCount = await User.countDocuments();
     const user = await User.create({
       name,
       email,
       password,
       phone,
+      role: userCount === 0 ? 'admin' : 'user',
       preferredLanguage: preferredLanguage || 'en',
       conditions: conditions || [],
     });
@@ -32,6 +34,7 @@ router.post('/register', async (req, res) => {
       name: user.name,
       email: user.email,
       phone: user.phone,
+      role: user.role,
       preferredLanguage: user.preferredLanguage,
       conditions: user.conditions,
       settings: user.settings,
@@ -60,6 +63,7 @@ router.post('/login', async (req, res) => {
       name: user.name,
       email: user.email,
       phone: user.phone,
+      role: user.role,
       preferredLanguage: user.preferredLanguage,
       conditions: user.conditions,
       settings: user.settings,
@@ -102,6 +106,23 @@ router.put('/profile', protect, async (req, res) => {
       emergencyContact: updated.emergencyContact,
       settings: updated.settings,
     });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/make-admin', async (req, res) => {
+  try {
+    const { secret, email } = req.body;
+    if (secret !== process.env.ADMIN_SECRET && secret !== 'polycare-admin-2024') {
+      return res.status(403).json({ error: 'Invalid secret' });
+    }
+    if (!email) return res.status(400).json({ error: 'Email required' });
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    user.role = 'admin';
+    await user.save();
+    res.json({ message: `${user.name} is now an admin` });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

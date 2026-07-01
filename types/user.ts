@@ -10,6 +10,7 @@ export interface User {
   email?: string;
   phone?: string;
   dateOfBirth?: string;
+  role?: 'user' | 'admin';
   preferredLanguage: Language;
   conditions: NCDType[];
   allergies?: string[];
