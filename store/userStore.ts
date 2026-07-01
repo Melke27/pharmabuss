@@ -143,9 +143,13 @@ export const useUserStore = create<UserState>()(
               },
             };
             set({ user, isAuthenticated: true });
+          } else {
+            set({ isAuthenticated: false, user: null });
           }
         } catch {
-          await authApi.logout();
+          if (!get().user) {
+            set({ isAuthenticated: false, user: null });
+          }
         }
       },
 

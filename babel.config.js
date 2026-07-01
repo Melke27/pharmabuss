@@ -7,6 +7,8 @@ module.exports = function (api) {
         {
           // Transform import.meta for web compatibility
           unstable_transformImportMeta: true,
+          // Target older JS to transpile modern features for JSC
+          targets: { node: 'current' },
         },
       ],
     ],

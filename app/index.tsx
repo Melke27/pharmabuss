@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, Typography, BorderRadius, Shadows } from '../constants/design';
@@ -8,11 +8,7 @@ import { useEffect } from 'react';
 
 export default function Index() {
   const router = useRouter();
-  const { isAuthenticated, user, loadStoredAuth } = useUserStore();
-
-  useEffect(() => {
-    loadStoredAuth();
-  }, []);
+  const isAuthenticated = useUserStore((s) => s.isAuthenticated);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -57,7 +53,6 @@ export default function Index() {
           >
             <Text style={styles.primaryButtonText}>Sign In</Text>
           </TouchableOpacity>
-
           <TouchableOpacity
             style={styles.secondaryButton}
             onPress={() => router.push('/register')}
