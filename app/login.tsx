@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -39,7 +39,7 @@ export default function LoginScreen() {
             <View style={styles.topDecoration} />
             <View style={styles.logoContainer}>
               <View style={styles.logoCircle}>
-                <Ionicons name="medkit" size={40} color="#fff" />
+                <Image source={require('../assets/icon.png')} style={{ width: 52, height: 52, borderRadius: 26 }} />
               </View>
               <Text style={styles.appName}>PolyCare</Text>
               <Text style={styles.tagline}>Your health, simplified</Text>
