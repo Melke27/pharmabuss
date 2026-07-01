@@ -38,8 +38,8 @@ export default function LoginScreen() {
           <View style={styles.headerCurve}>
             <View style={styles.topDecoration} />
             <View style={styles.logoContainer}>
-              <View style={styles.logoCircle}>
-                <Image source={require('../assets/icon.png')} style={{ width: 52, height: 52, borderRadius: 26 }} />
+              <View style={styles.logoWrap}>
+                <Image source={require('../assets/icon.png')} style={{ width: 72, height: 72 }} resizeMode="contain" />
               </View>
               <Text style={styles.appName}>PolyCare</Text>
               <Text style={styles.tagline}>Your health, simplified</Text>
@@ -148,10 +148,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.06)', borderBottomLeftRadius: 120,
   },
   logoContainer: { alignItems: 'center', paddingTop: Spacing.xl, paddingBottom: Spacing.sm },
-  logoCircle: {
-    width: 72, height: 72, borderRadius: 36, backgroundColor: 'rgba(255,255,255,0.18)',
+  logoWrap: {
+    width: 80, height: 80,
     justifyContent: 'center', alignItems: 'center', marginBottom: Spacing.md,
-    borderWidth: 2, borderColor: 'rgba(255,255,255,0.25)',
   },
   appName: { fontSize: 28, fontWeight: '700', color: '#fff', letterSpacing: 0.5 },
   tagline: { fontSize: 15, color: 'rgba(255,255,255,0.8)', marginTop: 4 },

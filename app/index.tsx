@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, Typography, BorderRadius, Shadows } from '../constants/design';
@@ -20,10 +20,10 @@ export default function Index() {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <View style={styles.logoSection}>
-          <View style={styles.logoCircle}>
-            <Ionicons name="medkit" size={48} color={Colors.textOnPrimary} />
+          <View style={styles.logoWrap}>
+            <Image source={require('../assets/icon.png')} style={{ width: 80, height: 80 }} resizeMode="contain" />
           </View>
-          <Text style={styles.appName}>PPT Care</Text>
+          <Text style={styles.appName}>PolyCare</Text>
           <Text style={styles.tagline}>Smart care for NCD patients</Text>
         </View>
 
@@ -69,8 +69,8 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   content: { flex: 1, justifyContent: 'center', padding: Spacing.lg },
   logoSection: { alignItems: 'center', marginBottom: Spacing.xxl },
-  logoCircle: {
-    width: 96, height: 96, borderRadius: 48, backgroundColor: Colors.primary,
+  logoWrap: {
+    width: 100, height: 100,
     justifyContent: 'center', alignItems: 'center', marginBottom: Spacing.md,
   },
   appName: { ...Typography.fontSize.xxxl, ...Typography.fontWeight.bold, color: Colors.text },

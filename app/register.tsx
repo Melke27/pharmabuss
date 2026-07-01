@@ -56,8 +56,8 @@ export default function RegisterScreen() {
           <View style={styles.headerCurve}>
             <View style={styles.topDecoration} />
             <View style={styles.logoContainer}>
-              <View style={styles.logoCircle}>
-                <Image source={require('../assets/icon.png')} style={{ width: 48, height: 48, borderRadius: 24 }} />
+              <View style={styles.logoWrap}>
+                <Image source={require('../assets/icon.png')} style={{ width: 64, height: 64 }} resizeMode="contain" />
               </View>
               <Text style={styles.appName}>Create Account</Text>
               <Text style={styles.tagline}>Step {step} of 2 — {step === 1 ? 'Personal Info' : 'Security'}</Text>
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
   },
   topDecoration: { position: 'absolute', top: 0, right: 0, width: 120, height: 120, backgroundColor: 'rgba(255,255,255,0.06)', borderBottomLeftRadius: 120 },
   logoContainer: { alignItems: 'center', paddingTop: Spacing.xl, paddingBottom: Spacing.sm },
-  logoCircle: { width: 68, height: 68, borderRadius: 34, backgroundColor: 'rgba(255,255,255,0.18)', justifyContent: 'center', alignItems: 'center', marginBottom: Spacing.md, borderWidth: 2, borderColor: 'rgba(255,255,255,0.25)' },
+  logoWrap: { width: 72, height: 72, justifyContent: 'center', alignItems: 'center', marginBottom: Spacing.md },
   appName: { fontSize: 26, fontWeight: '700', color: '#fff', letterSpacing: 0.3 },
   tagline: { fontSize: 13, color: 'rgba(255,255,255,0.85)', marginTop: 4 },
   stepsRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: Spacing.md, paddingHorizontal: 60 },
