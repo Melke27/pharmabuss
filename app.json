@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "PPT CARE FOR NCD",
+    "slug": "ppt-care-for-ncd",
+    "version": "1.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.polycare.ncd"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.polycare.ncd"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}

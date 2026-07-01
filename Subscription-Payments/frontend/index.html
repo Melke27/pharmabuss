@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subscription Payments UI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;700;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="ambient ambient-a" aria-hidden="true"></div>
+  <div class="ambient ambient-b" aria-hidden="true"></div>
+
+  <main class="shell">
+    <section class="hero reveal" style="--delay: 0.05s">
+      <p class="eyebrow">Web3 Subscription Payments</p>
+      <h1>Run your subscription business directly on-chain.</h1>
+      <p class="hero-copy">Connect wallet, attach contract, and manage user plus owner actions with a polished Web3 control surface.</p>
+      <div class="meta-row">
+        <span id="networkBadge" class="pill pill-neutral">Network: Not connected</span>
+        <span id="walletBadge" class="pill">Wallet: Not connected</span>
+        <span id="ownerBadge" class="pill pill-neutral">Role: Viewer</span>
+        <span id="lastRefreshBadge" class="pill pill-neutral">Last refresh: -</span>
+      </div>
+      <p id="syncStatus" class="sync-status">Sync status: Initializing...</p>
+    </section>
+
+    <section class="grid">
+      <article class="card reveal" style="--delay: 0.16s">
+        <h2>Connection</h2>
+        <label for="contractAddress">Contract address</label>
+        <input id="contractAddress" type="text" placeholder="0x..." autocomplete="off" />
+        <div class="button-row">
+          <button id="connectBtn" class="btn btn-primary">Connect Wallet</button>
+          <button id="attachBtn" class="btn btn-outline">Attach Contract</button>
+          <button id="switchLocalBtn" class="btn btn-ghost">Switch to Localhost</button>
+        </div>
+        <p class="hint">The app tries to auto-load ABI and address from local deploy files.</p>
+      </article>
+
+      <article class="card reveal" style="--delay: 0.24s">
+        <h2>Plan Details</h2>
+        <div class="stat-list">
+          <div class="stat-item">
+            <span>Price</span>
+            <strong id="planPrice">-</strong>
+          </div>
+          <div class="stat-item">
+            <span>Period</span>
+            <strong id="planPeriod">-</strong>
+          </div>
+          <div class="stat-item">
+            <span>Paused</span>
+            <strong id="planPaused">-</strong>
+          </div>
+        </div>
+      </article>
+
+      <article class="card reveal" style="--delay: 0.32s">
+        <h2>Contract State</h2>
+        <div class="stat-list">
+          <div class="stat-item">
+            <span>Owner</span>
+            <strong id="contractOwner">-</strong>
+          </div>
+          <div class="stat-item">
+            <span>Balance</span>
+            <strong id="contractBalance">-</strong>
+          </div>
+          <div class="stat-item">
+            <span>ABI Source</span>
+            <strong id="abiSource">Fallback</strong>
+          </div>
+        </div>
+      </article>
+
+      <article class="card reveal" style="--delay: 0.4s">
+        <h2>Your Status</h2>
+        <div class="stat-list">
+          <div class="stat-item">
+            <span>Active</span>
+            <strong id="isActive">-</strong>
+          </div>
+          <div class="stat-item">
+            <span>Expiry</span>
+            <strong id="expiry">-</strong>
+          </div>
+          <div class="stat-item">
+            <span>Time Left</span>
+            <strong id="timeLeft">-</strong>
+          </div>
+        </div>
+      </article>
+
+      <article class="card actions reveal" style="--delay: 0.48s">
+        <h2>User Actions</h2>
+        <label for="beneficiaryAddress">Beneficiary (for sponsored subscribe)</label>
+        <input id="beneficiaryAddress" type="text" placeholder="0x... (optional)" autocomplete="off" />
+        <div class="button-grid">
+          <button id="subscribeBtn" class="btn btn-primary">Subscribe</button>
+          <button id="renewBtn" class="btn btn-outline">Renew</button>
+          <button id="subscribeForBtn" class="btn btn-outline">Subscribe For</button>
+          <button id="cancelBtn" class="btn btn-danger">Cancel</button>
+          <button id="refreshBtn" class="btn btn-ghost">Refresh</button>
+        </div>
+      </article>
+
+      <article class="card owner-card reveal" style="--delay: 0.56s">
+        <h2>Owner Controls</h2>
+        <p class="hint">These actions are enabled only when connected wallet matches contract owner.</p>
+
+        <div class="form-grid">
+          <div>
+            <label for="ownerPriceEth">New Price (ETH)</label>
+            <input id="ownerPriceEth" type="number" min="0" step="0.0001" placeholder="0.01" />
+          </div>
+          <div>
+            <label for="ownerPeriodDays">New Period (Days)</label>
+            <input id="ownerPeriodDays" type="number" min="1" step="1" placeholder="30" />
+          </div>
+        </div>
+        <button id="setPlanBtn" class="btn btn-primary">Update Plan</button>
+
+        <div class="divider"></div>
+
+        <div class="form-grid">
+          <div>
+            <label for="grantAddress">Grant User Address</label>
+            <input id="grantAddress" type="text" placeholder="0x..." autocomplete="off" />
+          </div>
+          <div>
+            <label for="grantDays">Grant Days</label>
+            <input id="grantDays" type="number" min="1" step="1" placeholder="7" />
+          </div>
+        </div>
+        <button id="grantBtn" class="btn btn-outline">Grant Subscription Time</button>
+
+        <div class="divider"></div>
+
+        <label for="withdrawAddress">Withdraw To Address</label>
+        <input id="withdrawAddress" type="text" placeholder="0x... (empty = connected wallet)" autocomplete="off" />
+
+        <div class="button-row">
+          <button id="pauseToggleBtn" class="btn btn-danger">Pause / Unpause</button>
+          <button id="withdrawAllBtn" class="btn btn-ghost">Withdraw All</button>
+        </div>
+      </article>
+
+      <article class="card log-card reveal" style="--delay: 0.64s">
+        <h2>Activity</h2>
+        <div id="logPanel" class="log-panel" role="status" aria-live="polite"></div>
+      </article>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" aria-live="polite"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/web3@4.16.0/dist/web3.min.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+{
+  "common": {
+    "appName": "ኣስተዳዳሪ መድሃኒት",
+    "ok": "እወድ",
+    "cancel": "ተው",
+    "save": "ኣክል",
+    "delete": "ሰርዝ",
+    "edit": "ቀርጽ",
+    "add": "ኣክል",
+    "search": "ርክብ",
+    "loading": "ብመጫን ዝርከብ...",
+    "error": "ግድኣ",
+    "success": "ተራእዩ",
+    "back": "ክንደና",
+    "next": "ቀጣይ",
+    "skip": "ኣወድቕ",
+    "done": "ወዲሓነ"
+  },
+  "navigation": {
+    "home": "ቤት",
+    "medications": "መድሃኒታት",
+    "reminders": "ኣስታውስቲ",
+    "exercise": "ልምቲ",
+    "diet": "ምግቢ",
+    "consultation": "ምክር",
+    "locator": "ቦታ መድሃኒት",
+    "education": "ትምህርቲ",
+    "settings": "ቅጥራት"
+  },
+  "home": {
+    "welcome": "ብደሓን መጡ",
+    "todayReminders": "ኣስታውስቲ ዓለመ ዛሬ",
+    "upcomingDoses": "ውሃ ክልተ ክሳብ",
+    "quickActions": "ተግባራት ፈጣሪ",
+    "addMedication": "መድሃኒት ኣክል",
+    "scheduleReminder": "ኣስታውስቲ ኣስተዳዳሪ",
+    "consultPharmacist": "ከኣማካሪ ኣማካር",
+    "findPharmacy": "ቦታ መድሃኒት ርክብ"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "contractAddress": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+  "network": "localhost",
+  "chainId": 31337,
+  "deployedAt": "2026-04-23T17:15:45.654Z",
+  "defaults": {
+    "subscriptionPriceEth": "0.01",
+    "subscriptionPeriodSeconds": 2592000
+  }
+}

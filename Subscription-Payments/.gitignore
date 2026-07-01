@@ -1,0 +1,10 @@
+node_modules/
+artifacts/
+cache/
+.env
+coverage/
+typechain-types/
+.DS_Store
+.config/
+.cache/
+.local/

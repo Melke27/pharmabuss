@@ -1,0 +1,40 @@
+{
+  "common": {
+    "appName": "የመዳመጻ አስተዳዳሪ",
+    "ok": "እሺ",
+    "cancel": "ተው",
+    "save": "አስቀምጥ",
+    "delete": "ሰርዝ",
+    "edit": "አርትዕ",
+    "add": "አክል",
+    "search": "ፈልግ",
+    "loading": "በመጫን ላይ...",
+    "error": "ስህተት",
+    "success": "ተሳክቷል",
+    "back": "ተመለስ",
+    "next": "ቀጣይ",
+    "skip": "ዝለል",
+    "done": "ጨርሷል"
+  },
+  "navigation": {
+    "home": "መነሻ",
+    "medications": "መዳመጻዎች",
+    "reminders": "ማስታወሻዎች",
+    "exercise": "እንቅስቃሴ",
+    "diet": "ምግብ",
+    "consultation": "አማካሪ",
+    "locator": "የመድኃኒት ቦታ",
+    "education": "ትምህርት",
+    "settings": "ቅንብሮች"
+  },
+  "home": {
+    "welcome": "እንኳን ደህና መጡ",
+    "todayReminders": "የዛሬ ማስታወሻዎች",
+    "upcomingDoses": "ቀጣይ ውሃዎች",
+    "quickActions": "ፈጣን ተግባራት",
+    "addMedication": "መዳመጻ አክል",
+    "scheduleReminder": "ማስታወሻ አስቀምጥ",
+    "consultPharmacist": "ከአማካሪ ያማክሩ",
+    "findPharmacy": "የመድኃኒት ቤት ፈልግ"
+  }
+}

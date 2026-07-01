@@ -1,0 +1,40 @@
+{
+  "common": {
+    "appName": "Fayyaa Daawaa Mijataa",
+    "ok": "Tole",
+    "cancel": "Haqu",
+    "save": "Kaasu",
+    "delete": "Haqu",
+    "edit": "Gulaalu",
+    "add": "Dabalu",
+    "search": "Barbaadi",
+    "loading": "Fe'ama...",
+    "error": "Dogoggora",
+    "success": "Milkaa'e",
+    "back": "Deebi'i",
+    "next": "Itti aanu",
+    "skip": "Dhiifachi",
+    "done": "Xumure"
+  },
+  "navigation": {
+    "home": "Mana",
+    "medications": "Daawaa'ota",
+    "reminders": "Yaadannoo",
+    "exercise": "Jechoota",
+    "diet": "Eenyaa",
+    "consultation": "Yaada",
+    "locator": "Bakka Daawaa",
+    "education": "Barataa",
+    "settings": "Qindaa'ina"
+  },
+  "home": {
+    "welcome": "Baga nagaan dhufu",
+    "todayReminders": "Yaadanno Har'a",
+    "upcomingDoses": "Dhiibbaa Itti aanu",
+    "quickActions": "Hojiiwiiwwan Dhiiraa",
+    "addMedication": "Daawaa Dabalu",
+    "scheduleReminder": "Yaadannoo Qindaa'i",
+    "consultPharmacist": "Yaada Yaadachiisi",
+    "findPharmacy": "Bakka Daawaa Barbaadi"
+  }
+}
