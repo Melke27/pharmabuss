@@ -14,11 +14,16 @@ export default function RootLayout() {
   const fetchReminders = useReminderStore((s) => s.fetchReminders);
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       await loadToken();
-      await loadStoredAuth();
-      setReady(true);
+      await Promise.race([
+        loadStoredAuth(),
+        new Promise(resolve => setTimeout(resolve, 3000)),
+      ]);
+      if (!cancelled) setReady(true);
     })();
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
