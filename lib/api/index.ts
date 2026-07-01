@@ -4,3 +4,4 @@ export { medicationsApi } from './medications';
 export { remindersApi } from './reminders';
 export { consultationsApi } from './consultations';
 export { habitsApi } from './habits';
+export { dietApi } from './diet';

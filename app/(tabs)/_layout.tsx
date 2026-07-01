@@ -77,11 +77,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="consultation"
+        name="diet"
         options={{
-          title: t('navigation.consultation'),
+          title: 'Diet',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubble-ellipses" size={size} color={color} />
+            <Ionicons name="restaurant" size={size} color={color} />
           ),
         }}
       />
