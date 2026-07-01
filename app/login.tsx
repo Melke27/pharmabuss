@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,110 +11,193 @@ export default function LoginScreen() {
   const { login, isLoading, error } = useUserStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
+
+  const validate = () => {
+    const errors: typeof fieldErrors = {};
+    if (!email.trim()) errors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(email)) errors.email = 'Invalid email format';
+    if (!password) errors.password = 'Password is required';
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
+    if (!validate()) return;
     try {
       await login(email.trim(), password.trim());
       router.replace('/(tabs)');
-    } catch (err: any) {
-      Alert.alert('Login Failed', err.message || 'Invalid credentials');
-    }
+    } catch {}
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        <View style={styles.headerSection}>
-          <View style={styles.logoCircle}>
-            <Ionicons name="medkit" size={36} color={Colors.textOnPrimary} />
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          <View style={styles.headerCurve}>
+            <View style={styles.topDecoration} />
+            <View style={styles.logoContainer}>
+              <View style={styles.logoCircle}>
+                <Ionicons name="medkit" size={40} color="#fff" />
+              </View>
+              <Text style={styles.appName}>PolyCare</Text>
+              <Text style={styles.tagline}>Your health, simplified</Text>
+            </View>
           </View>
-          <Text style={styles.appName}>PPT Care</Text>
-          <Text style={styles.tagline}>Sign in to manage your health</Text>
-        </View>
 
-        <View style={styles.formCard}>
-          <Text style={styles.formTitle}>Login</Text>
+          <View style={styles.formCard}>
+            <Text style={styles.welcomeBack}>Welcome Back</Text>
+            <Text style={styles.formSubtitle}>Sign in to continue managing your medications</Text>
 
-          <Text style={styles.inputLabel}>Email</Text>
-          <TextInput
-            value={email}
-            onChangeText={setEmail}
-            placeholder="your@email.com"
-            placeholderTextColor={Colors.textLight}
-            style={styles.input}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Email</Text>
+              <View style={[styles.inputWrapper, fieldErrors.email && styles.inputError]}>
+                <Ionicons name="mail-outline" size={18} color={fieldErrors.email ? Colors.error : Colors.textSecondary} style={styles.inputIcon} />
+                <TextInput
+                  value={email}
+                  onChangeText={(v) => { setEmail(v); setFieldErrors((p) => ({ ...p, email: undefined })); }}
+                  placeholder="your@email.com"
+                  placeholderTextColor={Colors.textLight}
+                  style={styles.input}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+              {fieldErrors.email && <Text style={styles.fieldError}>{fieldErrors.email}</Text>}
+            </View>
 
-          <Text style={styles.inputLabel}>Password</Text>
-          <TextInput
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Enter your password"
-            placeholderTextColor={Colors.textLight}
-            style={styles.input}
-            secureTextEntry
-          />
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Password</Text>
+              <View style={[styles.inputWrapper, fieldErrors.password && styles.inputError]}>
+                <Ionicons name="lock-closed-outline" size={18} color={fieldErrors.password ? Colors.error : Colors.textSecondary} style={styles.inputIcon} />
+                <TextInput
+                  value={password}
+                  onChangeText={(v) => { setPassword(v); setFieldErrors((p) => ({ ...p, password: undefined })); }}
+                  placeholder="Enter your password"
+                  placeholderTextColor={Colors.textLight}
+                  style={styles.input}
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeButton}>
+                  <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={18} color={Colors.textSecondary} />
+                </TouchableOpacity>
+              </View>
+              {fieldErrors.password && <Text style={styles.fieldError}>{fieldErrors.password}</Text>}
+            </View>
 
-          {error && <Text style={styles.errorText}>{error}</Text>}
-
-          <TouchableOpacity
-            style={[styles.loginButton, (!email.trim() || !password.trim()) && styles.disabledButton]}
-            onPress={handleLogin}
-            disabled={isLoading || !email.trim() || !password.trim()}
-          >
-            {isLoading ? (
-              <ActivityIndicator color={Colors.textOnPrimary} />
-            ) : (
-              <Text style={styles.loginButtonText}>Sign In</Text>
+            {error && (
+              <View style={styles.errorBanner}>
+                <Ionicons name="alert-circle" size={16} color={Colors.error} />
+                <Text style={styles.errorBannerText}>{error}</Text>
+              </View>
             )}
-          </TouchableOpacity>
 
-          <View style={styles.signupRow}>
-            <Text style={styles.signupText}>Don't have an account? </Text>
-            <Link href="/register">
-              <Text style={styles.signupLinkText}>Sign Up</Text>
-            </Link>
+            <TouchableOpacity
+              style={[styles.primaryButton, isLoading && styles.buttonLoading]}
+              onPress={handleLogin}
+              disabled={isLoading}
+              activeOpacity={0.85}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <>
+                  <Text style={styles.primaryButtonText}>Sign In</Text>
+                  <Ionicons name="arrow-forward" size={18} color="#fff" />
+                </>
+              )}
+            </TouchableOpacity>
+
+            <View style={styles.dividerRow}>
+              <View style={styles.divider} />
+              <Text style={styles.dividerText}>or</Text>
+              <View style={styles.divider} />
+            </View>
+
+            <TouchableOpacity style={styles.demoButton} activeOpacity={0.8}>
+              <Ionicons name="play-circle-outline" size={18} color={Colors.primary} />
+              <Text style={styles.demoButtonText}>Try Demo Account</Text>
+            </TouchableOpacity>
+
+            <View style={styles.signupRow}>
+              <Text style={styles.signupText}>Don't have an account? </Text>
+              <Link href="/register">
+                <Text style={styles.signupLink}>Create Account</Text>
+              </Link>
+            </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
-  scrollContent: { flexGrow: 1, justifyContent: 'center', padding: Spacing.lg },
-  headerSection: { alignItems: 'center', marginBottom: Spacing.xl },
+  scrollContent: { flexGrow: 1 },
+  headerCurve: {
+    backgroundColor: Colors.primary, paddingBottom: 40,
+    borderBottomLeftRadius: 32, borderBottomRightRadius: 32,
+    ...Shadows.md,
+  },
+  topDecoration: {
+    position: 'absolute', top: 0, right: 0, width: 120, height: 120,
+    backgroundColor: 'rgba(255,255,255,0.06)', borderBottomLeftRadius: 120,
+  },
+  logoContainer: { alignItems: 'center', paddingTop: Spacing.xl, paddingBottom: Spacing.sm },
   logoCircle: {
-    width: 80, height: 80, borderRadius: 40, backgroundColor: Colors.primary,
+    width: 72, height: 72, borderRadius: 36, backgroundColor: 'rgba(255,255,255,0.18)',
     justifyContent: 'center', alignItems: 'center', marginBottom: Spacing.md,
+    borderWidth: 2, borderColor: 'rgba(255,255,255,0.25)',
   },
-  appName: { ...Typography.fontSize.xxl, ...Typography.fontWeight.bold, color: Colors.text },
-  tagline: { ...Typography.fontSize.md, color: Colors.textSecondary, marginTop: Spacing.xs },
+  appName: { fontSize: 28, fontWeight: '700', color: '#fff', letterSpacing: 0.5 },
+  tagline: { fontSize: 15, color: 'rgba(255,255,255,0.8)', marginTop: 4 },
   formCard: {
-    backgroundColor: Colors.surface, borderRadius: BorderRadius.xl, borderWidth: 1,
-    borderColor: Colors.border, padding: Spacing.lg, ...Shadows.md,
+    marginHorizontal: Spacing.lg, marginTop: -20,
+    backgroundColor: Colors.surface, borderRadius: BorderRadius.xl,
+    borderWidth: 1, borderColor: Colors.border, padding: Spacing.lg,
+    ...Shadows.lg,
   },
-  formTitle: { ...Typography.fontSize.xl, ...Typography.fontWeight.bold, color: Colors.text, marginBottom: Spacing.lg },
-  inputLabel: { ...Typography.fontSize.sm, ...Typography.fontWeight.medium, color: Colors.text, marginBottom: Spacing.xs },
-  input: {
-    backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border,
-    borderRadius: BorderRadius.md, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm,
-    marginBottom: Spacing.md, ...Typography.fontSize.md, color: Colors.text,
+  welcomeBack: { fontSize: 22, fontWeight: '700', color: Colors.text, marginBottom: 4 },
+  formSubtitle: { fontSize: 14, color: Colors.textSecondary, marginBottom: Spacing.lg, lineHeight: 20 },
+  inputGroup: { marginBottom: Spacing.md },
+  inputLabel: { fontSize: 13, fontWeight: '600', color: Colors.text, marginBottom: 6 },
+  inputWrapper: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.background,
+    borderWidth: 1.5, borderColor: Colors.border, borderRadius: BorderRadius.md,
+    paddingHorizontal: Spacing.sm,
   },
-  errorText: { color: Colors.error, ...Typography.fontSize.sm, marginBottom: Spacing.sm },
-  loginButton: {
-    backgroundColor: Colors.primary, borderRadius: BorderRadius.lg, paddingVertical: Spacing.md,
-    alignItems: 'center', marginTop: Spacing.sm,
+  inputError: { borderColor: Colors.error, backgroundColor: '#FEF2F2' },
+  inputIcon: { marginRight: Spacing.sm },
+  input: { flex: 1, fontSize: 15, color: Colors.text, paddingVertical: 12 },
+  eyeButton: { padding: 4, marginLeft: 4 },
+  fieldError: { fontSize: 12, color: Colors.error, marginTop: 4, marginLeft: 4 },
+  errorBanner: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: Colors.errorLight, borderRadius: BorderRadius.md,
+    padding: Spacing.sm, marginBottom: Spacing.md,
   },
-  disabledButton: { opacity: 0.55 },
-  loginButtonText: { ...Typography.fontSize.md, ...Typography.fontWeight.semibold, color: Colors.textOnPrimary },
-  signupRow: { flexDirection: 'row', justifyContent: 'center', marginTop: Spacing.lg },
-  signupText: { ...Typography.fontSize.sm, color: Colors.textSecondary },
-  signupLinkText: { ...Typography.fontSize.sm, ...Typography.fontWeight.semibold, color: Colors.primary },
+  errorBannerText: { flex: 1, fontSize: 13, color: Colors.error },
+  primaryButton: {
+    backgroundColor: Colors.primary, borderRadius: BorderRadius.lg,
+    paddingVertical: 14, flexDirection: 'row', alignItems: 'center',
+    justifyContent: 'center', gap: 8, ...Shadows.md,
+  },
+  buttonLoading: { opacity: 0.7 },
+  primaryButtonText: { fontSize: 16, fontWeight: '600', color: '#fff' },
+  dividerRow: { flexDirection: 'row', alignItems: 'center', marginVertical: Spacing.lg },
+  divider: { flex: 1, height: 1, backgroundColor: Colors.divider },
+  dividerText: { marginHorizontal: Spacing.md, fontSize: 13, color: Colors.textLight },
+  demoButton: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    paddingVertical: 12, borderRadius: BorderRadius.lg, borderWidth: 1.5,
+    borderColor: Colors.primary, borderStyle: 'dashed',
+  },
+  demoButtonText: { fontSize: 14, fontWeight: '600', color: Colors.primary },
+  signupRow: { flexDirection: 'row', justifyContent: 'center', marginTop: Spacing.lg, marginBottom: Spacing.xs },
+  signupText: { fontSize: 14, color: Colors.textSecondary },
+  signupLink: { fontSize: 14, fontWeight: '700', color: Colors.primary },
 });
